@@ -1,5 +1,7 @@
 package com.app.sm3.staza;
 
+import android.content.DialogInterface;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -40,9 +42,20 @@ public class ConsultaActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId()==R.id.menu_consulta_excluir){
-            ContatoDB contatoDB = new ContatoDB(this);
-            contatoDB.excluir(contatoConsultado);
-            finish();
+            AlertDialog confirmaExcluir = new AlertDialog.Builder(this)
+                   .setTitle("Tem certeza que deseja excluir o contato?")
+                   .setMessage("Este contato será apagado.")
+                   .setPositiveButton("Excluir", new DialogInterface.OnClickListener() {
+                       @Override
+                       public void onClick(DialogInterface dialog, int which) {
+                           ContatoDB contatoDB = new ContatoDB(ConsultaActivity.this);
+                           contatoDB.excluir(contatoConsultado);
+                           finish();
+                       }
+                   })
+                   .setNegativeButton("Cancelar", null)
+                   .create();
+            confirmaExcluir.show();
         }
         else if(item.getItemId()==R.id.menu_consulta_editar) {
             campoNome.setEnabled(true);
