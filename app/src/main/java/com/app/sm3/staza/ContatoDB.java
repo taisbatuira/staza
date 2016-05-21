@@ -17,18 +17,22 @@ public class ContatoDB extends SQLiteOpenHelper{
     public ContatoDB(Context context) {
         super(context, "ContatoDB", null, 1);
     }
-
     @Override
     public void onCreate(SQLiteDatabase db) {
         String sql  = "Create table TabelaContato(id integer primary key, camponome varchar, campotelefone char, campoplaca char)";
         db.execSQL(sql);
     }
 
-    public void insert(Contato contato) {
+    private ContentValues converteContatoParaContentValues (Contato contato){
         ContentValues values = new ContentValues();
         values.put("camponome",contato.getNome());
         values.put("campotelefone",contato.getTelefone());
         values.put("campoplaca",contato.getPlaca());
+        return values;
+    }
+
+    public void insert(Contato contatoDigitado) {
+        ContentValues values = converteContatoParaContentValues(contatoDigitado);
         getWritableDatabase().insertOrThrow("TabelaContato", null, values);
     }
 
@@ -55,6 +59,13 @@ public class ContatoDB extends SQLiteOpenHelper{
     public void excluir (Contato contatoSelecionado){
         Long idDoContato = contatoSelecionado.getId();
         getWritableDatabase().delete("TabelaContato","id=?",new String[]{idDoContato.toString()});
+    }
+
+    public void editar (Contato contatoParaAlterar){
+        Long idDoContato = contatoParaAlterar.getId();
+        ContentValues values = converteContatoParaContentValues(contatoParaAlterar);
+        values.put("id",idDoContato);
+        getWritableDatabase().update("TabelaContato",values,"id=?",new String[]{idDoContato.toString()});
     }
 
     @Override

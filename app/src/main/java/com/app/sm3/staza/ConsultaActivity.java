@@ -72,8 +72,8 @@ public class ConsultaActivity extends AppCompatActivity {
                     contatoEditado.setTelefone(campoTelefone.getText().toString());
                     contatoEditado.setPlaca(campoPlaca.getText().toString());
                     ContatoDB db = new ContatoDB(ConsultaActivity.this);
-
-                    
+                    db.editar(contatoEditado);
+                    finish();
                 }
             });
         }
