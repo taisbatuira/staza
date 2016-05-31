@@ -37,9 +37,19 @@
         android:id="@+id/consulta_salvar_editar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
         android:text="Salvar"
         android:layout_gravity="center_horizontal"
-        android:visibility="invisible"
+        android:visibility="gone"
+        />
+
+    <Button
+        android:id="@+id/consulta_rastrear"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:text="Rastrear"
+        android:layout_gravity="center_horizontal"
         />
 
 </LinearLayout>

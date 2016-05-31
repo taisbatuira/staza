@@ -61,6 +61,8 @@ public class ConsultaActivity extends AppCompatActivity {
             campoNome.setEnabled(true);
             campoTelefone.setEnabled(true);
             campoPlaca.setEnabled(true);
+            Button rastrear = (Button) findViewById(R.id.consulta_rastrear);
+            rastrear.setVisibility(View.GONE);
             Button salvar = (Button) findViewById(R.id.consulta_salvar_editar);
             salvar.setVisibility(View.VISIBLE);
             salvar.setOnClickListener(new View.OnClickListener() {
@@ -79,5 +81,7 @@ public class ConsultaActivity extends AppCompatActivity {
         }
             return super.onOptionsItemSelected(item);
     }
+
+
 }
 
