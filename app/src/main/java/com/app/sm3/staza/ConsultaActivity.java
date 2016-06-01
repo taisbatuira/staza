@@ -31,6 +31,14 @@ public class ConsultaActivity extends AppCompatActivity {
         campoNome.setText(mostraNomeContato);
         campoTelefone.setText(mostraTelefoneContato);
         campoPlaca.setText(mostraPlacaContato);
+        Button rastrear = (Button) findViewById(R.id.consulta_rastrear);
+        rastrear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                GerenciadorSMS gerenciador = new GerenciadorSMS();
+                gerenciador.enviaMensagem(contatoConsultado,"##gps##");
+            }
+        });
     }
 
     @Override
