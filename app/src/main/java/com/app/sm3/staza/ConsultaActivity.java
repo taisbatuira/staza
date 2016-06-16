@@ -1,6 +1,8 @@
 package com.app.sm3.staza;
 
+import android.Manifest;
 import android.content.DialogInterface;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -39,6 +41,10 @@ public class ConsultaActivity extends AppCompatActivity {
                 gerenciador.enviaMensagem(contatoConsultado,"##gps##");
             }
         });
+
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.READ_SMS, Manifest.permission.SEND_SMS, Manifest.permission.ACCESS_FINE_LOCATION},
+                12344);
     }
 
     @Override

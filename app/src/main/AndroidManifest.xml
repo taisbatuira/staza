@@ -3,6 +3,8 @@
     package="com.app.sm3.staza">
 
     <uses-permission android:name="android.permission.SEND_SMS"/>
+    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
     <application
         android:allowBackup="true"
@@ -18,7 +20,14 @@
             </intent-filter>
         </activity>
         <activity android:name=".FormularioActivity" />
-        <activity android:name=".ConsultaActivity"></activity>
+        <activity android:name=".ConsultaActivity"/>
+
+        <receiver android:name=".GerenciadorSMS"
+            android:permission="android.permission.BROADCAST_SMS">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_RECEIVED"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
