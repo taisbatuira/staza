@@ -4,23 +4,26 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
-import android.widget.Toast;
+
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 
 import java.util.Locale;
 
 /**
  * Created by Tis on 31/05/2016.
  */
-public class GerenciadorSMS extends BroadcastReceiver implements LocationListener{
+public class GerenciadorSMS extends BroadcastReceiver implements GoogleApiClient.ConnectionCallbacks, com.google.android.gms.location.LocationListener{
 
-    private Context context;
     private String telefoneDoDono;
+    private GoogleApiClient googleClient;
 
     public void enviaMensagem (Contato contato,String texto){
         SmsManager.getDefault().sendTextMessage(contato.getTelefone(),null,texto,null,null);
@@ -28,17 +31,22 @@ public class GerenciadorSMS extends BroadcastReceiver implements LocationListene
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        this.context = context;
         Bundle extras = intent.getExtras();
         Object[] mensagens = (Object[]) extras.get("pdus");
-        //String formato = extras.getString("format");
         byte[] mensagem = (byte[]) mensagens[0];
         SmsMessage sms = SmsMessage.createFromPdu(mensagem);
         if (sms.getMessageBody().contains("##gps##")){
             // ativar o gps para pegar a coordenada atual
-            LocationManager manager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-            manager.requestSingleUpdate(LocationManager.GPS_PROVIDER, this, null);
+
+            this.googleClient = new GoogleApiClient.Builder(context)
+                    .addConnectionCallbacks(this)
+                    .addApi(LocationServices.API)
+                    .build();
+
+            googleClient.connect();
+
             this.telefoneDoDono = sms.getDisplayOriginatingAddress();
+            System.out.println(this.telefoneDoDono);
         }
         else if (sms.getMessageBody().contains("##localizacao##")){
             String[] strings = sms.getMessageBody().split(" ");
@@ -55,22 +63,19 @@ public class GerenciadorSMS extends BroadcastReceiver implements LocationListene
     public void onLocationChanged(Location location) {
         String coordenada = "##localizacao## " + location.getLatitude() + "," + location.getLongitude();
         SmsManager.getDefault().sendTextMessage(telefoneDoDono,null,coordenada,null,null);
+        LocationServices.FusedLocationApi.removeLocationUpdates(this.googleClient, this);
     }
 
     @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
+    public void onConnected(@Nullable Bundle bundle) {
+        LocationRequest request = new LocationRequest();
+        request.setFastestInterval(5000);
+        request.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        LocationServices.FusedLocationApi.requestLocationUpdates(this.googleClient,request,this);
     }
 
     @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-
-    }
+    public void onConnectionSuspended(int i) {}
 }
 
 
