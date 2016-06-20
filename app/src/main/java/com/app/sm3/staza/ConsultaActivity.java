@@ -2,7 +2,9 @@ package com.app.sm3.staza;
 
 import android.Manifest;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -42,9 +44,15 @@ public class ConsultaActivity extends AppCompatActivity {
             }
         });
 
-        ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.READ_SMS, Manifest.permission.SEND_SMS, Manifest.permission.ACCESS_FINE_LOCATION},
-                12344);
+        verificaPermissaoChamada(Manifest.permission.SEND_SMS);
+        verificaPermissaoChamada(Manifest.permission.ACCESS_FINE_LOCATION);
+        verificaPermissaoChamada(Manifest.permission.ACCESS_COARSE_LOCATION);
+    }
+
+    private void verificaPermissaoChamada(String permissao) {
+        if (ContextCompat.checkSelfPermission(this, permissao)!= PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{permissao}, 12344);
+        }
     }
 
     @Override

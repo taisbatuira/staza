@@ -10,6 +10,7 @@ public class Contato implements Serializable {
     private String nome;
     private String telefone;
     private String placa;
+    private boolean permissao;
     //protocol usa implements enquanto class usa extends
 
 
@@ -43,6 +44,25 @@ public class Contato implements Serializable {
 
     public void setPlaca(String placa) {
         this.placa = placa;
+    }
+
+    public void setPermissaoDB(int permissao) {
+        if(permissao == 1) {
+            this.permissao = true;
+        } else if(permissao == 0) {
+            this.permissao = false;
+        }
+    }
+
+    public int getPermissaoDB() {
+        if(permissao) {
+            return 1;
+        }
+        return 0;
+    }
+
+    public boolean temPermissao() {
+        return permissao;
     }
 
     @Override

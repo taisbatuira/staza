@@ -19,7 +19,7 @@ public class ContatoDB extends SQLiteOpenHelper{
     }
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String sql  = "Create table TabelaContato(id integer primary key, camponome varchar, campotelefone char, campoplaca char)";
+        String sql  = "Create table TabelaContato(id integer primary key, camponome varchar, campotelefone char, campoplaca char, permissao integer)";
         db.execSQL(sql);
     }
 
@@ -28,6 +28,7 @@ public class ContatoDB extends SQLiteOpenHelper{
         values.put("camponome",contato.getNome());
         values.put("campotelefone",contato.getTelefone());
         values.put("campoplaca",contato.getPlaca());
+        values.put("permissao",contato.getPermissaoDB());
         return values;
     }
 
@@ -41,19 +42,26 @@ public class ContatoDB extends SQLiteOpenHelper{
         String select = "select * from TabelaContato order by camponome asc";
         Cursor cursor = getReadableDatabase().rawQuery(select,null); //readable lê os dados e o raw monta a query a partir de uma string
         while (cursor.moveToNext()){
-            Contato contato = new Contato();
-            Long id = cursor.getLong(cursor.getColumnIndex("id"));
-            contato.setId(id);
-            String nomeContato = cursor.getString(cursor.getColumnIndex("camponome"));
-            contato.setNome(nomeContato);
-            String telefoneContato = cursor.getString(cursor.getColumnIndex("campotelefone"));
-            contato.setTelefone(telefoneContato);
-            String placaContato = cursor.getString(cursor.getColumnIndex("campoplaca"));
-            contato.setPlaca(placaContato);
+            Contato contato = criaContatoDoBanco(cursor);
             lista.add(contato);
         }
         cursor.close();
         return lista;
+    }
+
+    private Contato criaContatoDoBanco(Cursor cursor) {
+        Contato contato = new Contato();
+        Long id = cursor.getLong(cursor.getColumnIndex("id"));
+        contato.setId(id);
+        String nomeContato = cursor.getString(cursor.getColumnIndex("camponome"));
+        contato.setNome(nomeContato);
+        String telefoneContato = cursor.getString(cursor.getColumnIndex("campotelefone"));
+        contato.setTelefone(telefoneContato);
+        String placaContato = cursor.getString(cursor.getColumnIndex("campoplaca"));
+        contato.setPlaca(placaContato);
+        int permissaoContato = cursor.getInt(cursor.getColumnIndex("permissao"));
+        contato.setPermissaoDB(permissaoContato);
+        return contato;
     }
 
     public void excluir (Contato contatoSelecionado){
@@ -68,10 +76,17 @@ public class ContatoDB extends SQLiteOpenHelper{
         getWritableDatabase().update("TabelaContato",values,"id=?",new String[]{idDoContato.toString()});
     }
 
+    public Contato buscaContatoComTelefone(String telefoneDoSMS) {
+        String select = "select * from TabelaContato where telefone = ?";
+        Cursor cursor = getReadableDatabase().rawQuery(select, new String[] {telefoneDoSMS});
+        if(cursor.moveToFirst()) {
+            return criaContatoDoBanco(cursor);
+        }
+        return null;
+    }
+
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
     }
-
-
 }

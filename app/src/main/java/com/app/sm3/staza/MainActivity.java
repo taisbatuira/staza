@@ -1,6 +1,11 @@
 package com.app.sm3.staza;
 
+import android.*;
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.ButtonBarLayout;
@@ -17,10 +22,37 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    private ContatoDB db;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); //traz td do layout
+        this.db = new ContatoDB(this); //crio o objeto vazio
+        verificaPermissaoChamada(Manifest.permission.READ_SMS);
+
+        Intent intent = getIntent();
+        if(intent != null){
+            boolean chegouSMS = intent.getBooleanExtra("chegouSMS",false);
+            String telefoneDoSMS = intent.getStringExtra("telefoneDoSMS");
+            if (chegouSMS){
+                Contato contatoDoDB = this.db.buscaContatoComTelefone(telefoneDoSMS);
+                if(contatoDoDB != null) {
+                    //contato existe
+                    if(contatoDoDB.temPermissao()) {
+                        //envia sms
+                    }
+                } else {
+                    //contato nao existe - mostra pop up sim ou nao
+                }
+            }
+        }
+    }
+
+    private void verificaPermissaoChamada(String permissao) {
+        if (ContextCompat.checkSelfPermission(this, permissao)!= PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{permissao}, 12344);
+        }
     }
 
     @Override
@@ -45,8 +77,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        ContatoDB db = new ContatoDB(this); //crio o objeto vazio
-        List<Contato> lista = db.listaContatos();
+        List<Contato> lista = this.db.listaContatos();
         ListView listaTela = (ListView) findViewById(R.id.lista_contatos);
         ArrayAdapter<Contato> adapter = new ArrayAdapter<Contato>(this,android.R.layout.simple_list_item_1,lista);
         listaTela.setAdapter(adapter);
@@ -57,10 +88,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent consultaActivity = new Intent(MainActivity.this, ConsultaActivity.class);
                 consultaActivity.putExtra("consultaContato",consultaContato);
                 startActivity(consultaActivity);
-
             }
         });
-
     }
-
 }
