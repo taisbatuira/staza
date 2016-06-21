@@ -2,10 +2,12 @@ package com.app.sm3.staza;
 
 import android.*;
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.ButtonBarLayout;
@@ -34,19 +36,41 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = getIntent();
         if(intent != null){
             boolean chegouSMS = intent.getBooleanExtra("chegouSMS",false);
-            String telefoneDoSMS = intent.getStringExtra("telefoneDoSMS");
+            final String telefoneDoSMS = intent.getStringExtra("telefoneDoSMS");
             if (chegouSMS){
                 Contato contatoDoDB = this.db.buscaContatoComTelefone(telefoneDoSMS);
-                if(contatoDoDB != null) {
-                    //contato existe
-                    if(contatoDoDB.temPermissao()) {
-                        //envia sms
-                    }
-                } else {
-                    //contato nao existe - mostra pop up sim ou nao
+                if(contatoDoDB == null) {
+                    //contato nao existe - mostra pop up se permite ou nao
+                    AlertDialog popUpPermissao = new AlertDialog.Builder(this)
+                            .setTitle("Permissão Solicitada")
+                            .setMessage("O número "+telefoneDoSMS+" está solicitando sua localização. Você autoriza o rastreio?")
+                            .setPositiveButton("Sim", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    //cadastra usuario e dá permissao
+                                    cadastraNumeroComPermissao(telefoneDoSMS,true);
+                                    new GerenciadorSMS(MainActivity.this).iniciaGPS();
+                                }
+                            })
+                            .setNegativeButton("Não", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    //cadastra usuario e não dá permissao
+                                    cadastraNumeroComPermissao(telefoneDoSMS,false);
+                                }
+                            })
+                            .create();
+                    popUpPermissao.show();
                 }
             }
         }
+    }
+
+    private void cadastraNumeroComPermissao(String telefoneDoSMS, boolean permissao) {
+        Intent irParaFormulario = new Intent(this,FormularioActivity.class);
+        irParaFormulario.putExtra("telefone",telefoneDoSMS);
+        irParaFormulario.putExtra("permissao", permissao);
+        startActivity(irParaFormulario);
     }
 
     private void verificaPermissaoChamada(String permissao) {

@@ -33,6 +33,13 @@ public class GerenciadorSMS extends BroadcastReceiver implements GoogleApiClient
     private GoogleApiClient googleClient;
     private Context context;
 
+    public GerenciadorSMS(Context context) {
+        this.context = context;
+    }
+
+    //O Android precisa desse construtor padrão pra ligar o Receiver
+    public GerenciadorSMS() {}
+
     public void enviaMensagem (Contato contato,String texto){
         SmsManager.getDefault().sendTextMessage(contato.getTelefone(),null,texto,null,null);
     }
@@ -50,13 +57,20 @@ public class GerenciadorSMS extends BroadcastReceiver implements GoogleApiClient
             this.telefoneDoDono = sms.getDisplayOriginatingAddress();
             System.out.println(this.telefoneDoDono);
 
-            Intent irParaMainActivity = new Intent(context,MainActivity.class);
-            irParaMainActivity.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            irParaMainActivity.putExtra("chegouSMS",true);
-            irParaMainActivity.putExtra("telefoneDoSMS", this.telefoneDoDono);
-            context.startActivity(irParaMainActivity);
+            Contato contatoDoDB = new ContatoDB(context).buscaContatoComTelefone(telefoneDoDono);
+            if(contatoDoDB == null) {
+                Intent irParaMainActivity = new Intent(context, MainActivity.class);
+                irParaMainActivity.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                irParaMainActivity.putExtra("chegouSMS", true);
+                irParaMainActivity.putExtra("telefoneDoSMS", this.telefoneDoDono);
+                context.startActivity(irParaMainActivity);
+            } else {
+                if(contatoDoDB.temPermissao()) {
+                    //manda sms;
+                    iniciaGPS();
+                }
+            }
         }
-
         else if (sms.getMessageBody().contains("##localizacao##")){
             String[] strings = sms.getMessageBody().split(" ");
             String coordenadaRecebida = strings[1];
@@ -68,40 +82,33 @@ public class GerenciadorSMS extends BroadcastReceiver implements GoogleApiClient
         }
     }
 
-//    (            SharedPreferences configs = this.context.getSharedPreferences("configs", Context.MODE_PRIVATE);
-//    boolean autorizado = configs.getBoolean("autorizado", false);
-//    if (! autorizado){
-//        AlertDialog.Builder(context).
-//    })
-
-    public void IniciaGPS(){
+    public void iniciaGPS(){
         this.googleClient = new GoogleApiClient.Builder(context)
                 .addConnectionCallbacks(this)
                 .addApi(LocationServices.API)
                 .build();
 
-        googleClient.connect();
+        googleClient.connect(); //(1)
     }
 
     @Override
-    public void onLocationChanged(Location location) {
+    public void onConnected(@Nullable Bundle bundle) { //(2)
+        LocationRequest request = new LocationRequest();
+        request.setFastestInterval(5000);
+        request.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+
+        LocationServices.FusedLocationApi.requestLocationUpdates(this.googleClient,request,this); //(3)
+        //Linha que faz a ativação do gps
+    }
+
+    @Override
+    public void onLocationChanged(Location location) { //(4)
         String coordenada = "##localizacao## " + location.getLatitude() + "," + location.getLongitude();
+        System.out.println(coordenada);
         SmsManager.getDefault().sendTextMessage(telefoneDoDono,null,coordenada,null,null);
         LocationServices.FusedLocationApi.removeLocationUpdates(this.googleClient, this);
     }
 
     @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        LocationRequest request = new LocationRequest();
-        request.setFastestInterval(5000);
-        request.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-
-        LocationServices.FusedLocationApi.requestLocationUpdates(this.googleClient,request,this);
-        //Linha que faz a ativação do gps
-    }
-
-    @Override
     public void onConnectionSuspended(int i) {}
 }
-
-

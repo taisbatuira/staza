@@ -77,7 +77,7 @@ public class ContatoDB extends SQLiteOpenHelper{
     }
 
     public Contato buscaContatoComTelefone(String telefoneDoSMS) {
-        String select = "select * from TabelaContato where telefone = ?";
+        String select = "select * from TabelaContato where campotelefone = ?";
         Cursor cursor = getReadableDatabase().rawQuery(select, new String[] {telefoneDoSMS});
         if(cursor.moveToFirst()) {
             return criaContatoDoBanco(cursor);

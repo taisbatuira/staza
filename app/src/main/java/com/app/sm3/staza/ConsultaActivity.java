@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -20,6 +21,7 @@ public class ConsultaActivity extends AppCompatActivity {
     private EditText campoNome;
     private EditText campoTelefone;
     private EditText campoPlaca;
+    private CheckBox campoPermissao;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,17 +31,20 @@ public class ConsultaActivity extends AppCompatActivity {
         String mostraNomeContato = contatoConsultado.getNome();
         String mostraTelefoneContato = contatoConsultado.getTelefone();
         String mostraPlacaContato = contatoConsultado.getPlaca();
+        boolean mostraPermissaoContato = contatoConsultado.temPermissao();
         campoNome = (EditText) findViewById(R.id.mostra_nome_contato);
         campoTelefone = (EditText) findViewById(R.id.mostra_telefone_contato);
         campoPlaca = (EditText) findViewById(R.id.mostra_placa_contato);
+        campoPermissao = (CheckBox) findViewById(R.id.mostra_permissao_contato);
         campoNome.setText(mostraNomeContato);
         campoTelefone.setText(mostraTelefoneContato);
         campoPlaca.setText(mostraPlacaContato);
+        campoPermissao.setChecked(mostraPermissaoContato);
         Button rastrear = (Button) findViewById(R.id.consulta_rastrear);
         rastrear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                GerenciadorSMS gerenciador = new GerenciadorSMS();
+                GerenciadorSMS gerenciador = new GerenciadorSMS(ConsultaActivity.this);
                 gerenciador.enviaMensagem(contatoConsultado,"##gps##");
             }
         });
@@ -83,6 +88,7 @@ public class ConsultaActivity extends AppCompatActivity {
             campoNome.setEnabled(true);
             campoTelefone.setEnabled(true);
             campoPlaca.setEnabled(true);
+            campoPermissao.setEnabled(true);
             Button rastrear = (Button) findViewById(R.id.consulta_rastrear);
             rastrear.setVisibility(View.GONE);
             Button salvar = (Button) findViewById(R.id.consulta_salvar_editar);
@@ -95,6 +101,7 @@ public class ConsultaActivity extends AppCompatActivity {
                     contatoEditado.setNome(campoNome.getText().toString());
                     contatoEditado.setTelefone(campoTelefone.getText().toString());
                     contatoEditado.setPlaca(campoPlaca.getText().toString());
+                    contatoEditado.setPermissaoBoolean(campoPermissao.isChecked());
                     ContatoDB db = new ContatoDB(ConsultaActivity.this);
                     db.editar(contatoEditado);
                     finish();

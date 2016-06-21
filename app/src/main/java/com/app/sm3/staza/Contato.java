@@ -69,4 +69,8 @@ public class Contato implements Serializable {
     public String toString() {
         return nome;
     }
+
+    public void setPermissaoBoolean(boolean permissaoBoolean) {
+        this.permissao = permissaoBoolean;
+    }
 }
