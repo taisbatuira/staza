@@ -29,7 +29,7 @@ import java.util.Locale;
  */
 public class GerenciadorSMS extends BroadcastReceiver implements GoogleApiClient.ConnectionCallbacks, com.google.android.gms.location.LocationListener{
 
-    private String telefoneDoDono;
+    private static String telefoneDoDono;
     private GoogleApiClient googleClient;
     private Context context;
 
@@ -54,15 +54,15 @@ public class GerenciadorSMS extends BroadcastReceiver implements GoogleApiClient
         if (sms.getMessageBody().contains("##gps##")){
             // ativar o gps para pegar a coordenada atual
 
-            this.telefoneDoDono = sms.getDisplayOriginatingAddress();
-            System.out.println(this.telefoneDoDono);
+            telefoneDoDono = sms.getDisplayOriginatingAddress();
+            System.out.println(telefoneDoDono);
 
             Contato contatoDoDB = new ContatoDB(context).buscaContatoComTelefone(telefoneDoDono);
             if(contatoDoDB == null) {
                 Intent irParaMainActivity = new Intent(context, MainActivity.class);
                 irParaMainActivity.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 irParaMainActivity.putExtra("chegouSMS", true);
-                irParaMainActivity.putExtra("telefoneDoSMS", this.telefoneDoDono);
+                irParaMainActivity.putExtra("telefoneDoSMS", telefoneDoDono);
                 context.startActivity(irParaMainActivity);
             } else {
                 if(contatoDoDB.temPermissao()) {
